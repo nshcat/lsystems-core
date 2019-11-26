@@ -24,7 +24,7 @@ pub struct InterpretationMap {
 }
 
 impl InterpretationMap {
-    fn associate(&mut self, character:char, operation: DrawOperation) {
+    pub fn associate(&mut self, character:char, operation: DrawOperation) {
 		self.internal_map.remove(&character);
 		self.internal_map.insert(character, operation);
 	}
