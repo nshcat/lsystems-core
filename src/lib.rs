@@ -48,12 +48,12 @@ impl InterpretationMap {
 // TODO maybe dont store polygons and line_segments here? Maybe own class? InterpretationResult?
 // three functions: iterate, interpret, draw
 pub struct LSystem {
-	engine: IterationEngine,
-	interpretations: InterpretationMap,
-	parameters: DrawingParameters,	
-	commands: Vec<DrawingModule>,  
-	line_segments: Vec<LineSegment>,
-	polygons: Vec<Polygon>
+	pub engine: IterationEngine,
+	pub interpretations: InterpretationMap,
+	pub parameters: DrawingParameters,	
+	pub commands: Vec<DrawingModule>,  
+	pub line_segments: Vec<LineSegment>,
+	pub polygons: Vec<Polygon>
 }
 
 impl LSystem {
