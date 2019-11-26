@@ -509,7 +509,7 @@ impl Display for Rule {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result {
 		write!(f, "{} ", self.pattern)?;
 		
-		if(self.probability < 1.0) {
+		if(!self.is_deterministic()) {
 			write!(f, ": {} ", self.probability)?;
 		}
 
