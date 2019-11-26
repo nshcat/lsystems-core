@@ -1,0 +1,12 @@
+[package]
+name = "lsystems-core"
+version = "0.1.0"
+authors = ["nshcat <nshcat@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nalgebra = "0.19.0"
+rand = "0.7.2"
+peg = "0.6.0"
