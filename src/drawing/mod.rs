@@ -2,9 +2,16 @@ pub mod turtle;
 pub mod primitives;
 pub mod types;
 
+#[cfg(feature = "serde")]
+use serde::*;
+#[cfg(feature = "serde")]
+#[macro_use]
+use serde_derive::*;
+
 use crate::drawing::types::*;
 
 #[repr(u8)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DrawOperation {
 	Forward = 0,
@@ -35,6 +42,7 @@ pub enum DrawOperation {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct DrawingParameters {
 	pub start_position: Vector2f,
 	pub start_angle: f64,
