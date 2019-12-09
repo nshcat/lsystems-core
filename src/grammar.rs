@@ -130,7 +130,10 @@ parser!{
 		rule rule_list_newline()
 			= (padding() "\n" padding())*
 
-		pub rule rule_list() -> Vec<Rule>
+		rule rule_list_inner() -> Vec<Rule>
 			= rs:lsystem_rule() ** rule_list_newline() { rs }
+
+		pub rule rule_list() -> Vec<Rule>
+			= rs:rule_list_inner() rule_list_newline() { rs }
 	}
 }
