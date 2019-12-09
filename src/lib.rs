@@ -40,6 +40,10 @@ impl InterpretationMap {
 		return self.internal_map.contains_key(&character);
 	}
 
+	pub fn clear(&mut self) {
+		self.internal_map.clear();	
+	}
+
 	fn new() -> InterpretationMap {
 		return InterpretationMap{ internal_map: HashMap::new() };
 	}
