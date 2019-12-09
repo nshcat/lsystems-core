@@ -127,7 +127,13 @@ parser!{
 		rule module_string_entry() -> Module
 			= padding() m:module() padding() { m }
 
+		rule rule_list_newline()
+			= (padding() "\n" padding())*
+
+		rule rule_list_inner() -> Vec<Rule>
+			= rs:lsystem_rule() ** rule_list_newline() { rs }
+
 		pub rule rule_list() -> Vec<Rule>
-			= rs:lsystem_rule() ** (padding() "\n" padding()) { rs }
+			= rs:rule_list_inner() rule_list_newline() { rs }
 	}
 }
