@@ -554,6 +554,7 @@ impl IterationEngine {
 
 	pub fn new() -> IterationEngine {
 		IterationEngine {
+			axiom: Vec::new(),
 			module_string: Vec::new(),
 			rules: Vec::new(),
 			iteration_depth: 0,
