@@ -128,6 +128,6 @@ parser!{
 			= padding() m:module() padding() { m }
 
 		pub rule rule_list() -> Vec<Rule>
-			= rs:lsystem_rule() ** (padding() "\n" padding()) { rs }
+			= rs:lsystem_rule() ** (padding() "\n" padding())* { rs }
 	}
 }
