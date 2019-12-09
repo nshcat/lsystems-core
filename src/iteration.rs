@@ -113,6 +113,15 @@ impl Evaluatable for BooleanExpression {
 	}
 }
 
+/// A statement used in the execution block of a rule. Statements can be evaluated, which causes
+/// 
+#[derive(Clone, Debug, PartialEq)]
+pub enum Statement {
+	IfThenElse(Box<BooleanExpression>, Box<Statement>, Option<Box<Statement>>),
+	Assignment(char, Box<ArithmeticExpression>)
+}
+
+
 /// Environment used for binding parameter names to actual values. Used when checking if a module
 /// satisfies a module pattern with condition, as well as when creating a module from a module 
 /// template when applying a rule.
@@ -527,6 +536,7 @@ impl Display for Rule {
 
 #[derive(Debug, Clone)]
 pub struct IterationEngine {
+	pub axiom: Vec<Module>,
 	pub module_string: Vec<Module>,
 	pub rules: Vec<Rule>,
 	pub iteration_depth: u32,
@@ -556,6 +566,8 @@ impl IterationEngine {
 	}
 
 	pub fn iterate(&mut self) {
+		self.module_string = self.axiom.clone();
+
 		for i in 0..self.iteration_depth {
 			let mut new_module_string: Vec<Module> = Vec::new();
 
