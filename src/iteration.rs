@@ -254,40 +254,22 @@ impl Display for ModuleTemplate {
     }
 }
 
-/// After interpreting the module string after iteration, all that is left are these
-/// drawing command modules. They can contain an optional parameter.
-/// TODO: Move into own module, interpretation with struct InterpretationEngine
+/// An annotation that can be part of a module, for example to create a bezier
+/// patch with name A and scaling f, the module would look like "~A(f)"
+/// We use hardcoded annotations, since just interpreting any character in front of a module
+/// identifier as an annotation would be ambiguous; we want to allow parameterless module strings such as
+/// "+++---A(f)" which contain special characters like '+' and '-'. 
 #[derive(Debug, Clone)]
-pub struct DrawingModule {
-	pub operation: DrawOperation,
-	pub parameter: Option<f64>
+pub enum ModuleAnnotation {
+	/// Interpret the module as a command to create a bezier patch at this position.
+	CreatePatch
 }
 
-impl DrawingModule {
-	pub fn new(op: DrawOperation) -> DrawingModule {
-		DrawingModule{
-			operation: op,
-			parameter: None
-		}
-	}
-
-	pub fn new_with_parameter(op: DrawOperation, param: f64) -> DrawingModule {
-		DrawingModule{
-			operation: op,
-			parameter: Some(param)
-		}
-	}
-}
-
-impl Display for DrawingModule {
+impl Display for ModuleAnnotation {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-		write!(f, "{:?}", self.operation)?;
-
-		if(self.parameter.is_some()) {
-			write!(f, "({})", self.parameter.unwrap())?;
-		}
-
-		write!(f, "")
+		return match self {
+			ModuleAnnotation::CreatePatch => write!(f, "~")
+		};
     }
 }
 
@@ -295,8 +277,12 @@ impl Display for DrawingModule {
 /// like "A".
 #[derive(Debug, Clone)]
 pub struct Module {
+	/// The character used as the identifier of this module.
 	pub identifier: char,
-	pub parameter_values: Vec<f64>
+	/// The actual parameters values.
+	pub parameter_values: Vec<f64>,
+	/// A possible module annotation.
+	pub annotation: Option<ModuleAnnotation>
 }
 
 impl Module {
@@ -307,10 +293,18 @@ impl Module {
 	pub fn parameter_count(& self) -> usize {
 		return self.parameter_values.len();	
 	}
+
+	pub fn has_annotation(& self) -> bool {
+		return self.annotation.is_some();
+	}
 }
 
 impl Display for Module {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+		if(self.has_annotation()) {
+			write!(f, "{}", self.annotation.unwrap())?;
+		}
+
 		if(self.has_parameters()) {
 			let mut is_first = true;
 			write!(f, "{}(", self.identifier)?;
@@ -528,8 +522,6 @@ impl Display for Rule {
 			write!(f, "{} ", template)?;
 		}
 
-		
-
 		write!(f, "")
     }
 }
@@ -623,7 +615,7 @@ impl IterationEngine {
 				}
 			}
 
-			self.module_string = new_module_string.clone();
+			self.module_string = new_module_string;
 		}
 	}
 }

@@ -10,10 +10,11 @@ use serde_derive::*;
 
 use crate::drawing::types::*;
 
+/// A single command for the turtle.
 #[repr(u8)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DrawOperation {
+pub enum TurtleCommand {
 	Forward = 0,
 	ForwardNoDraw = 1,
 	TurnRight = 2,
