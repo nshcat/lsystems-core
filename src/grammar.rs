@@ -59,7 +59,7 @@ parser!{
 			= n:$(['+'|'-']?['0'..='9']+("." ['0'..='9']+)?) { n.parse().unwrap() }
 
 		rule identifier() -> char
-			= x:$(['a'..='z' | 'A'..='Z' | '0'..='9' | '!' | '^' | '+' | '\'' | '-' | '[' | ']' | '\\' | '/' | '|' | '~' | '#' | '&' | '{' | '}' | '.']) { x.parse().unwrap() }
+			= x:$(['a'..='z' | 'A'..='Z' | '0'..='9' | '!' | '^' | '+' | '\'' | '-' | '[' | ']' | '\\' | '/' | '|' | '#' | '&' | '{' | '}' | '.']) { x.parse().unwrap() }
 
 		rule condition() -> BooleanExpression
 			= expr:(condition_part())? { expr.unwrap_or(BooleanExpression::Const(true)) }
@@ -71,10 +71,10 @@ parser!{
 			= x:$(['a'..='z']) { x.parse().unwrap() }
 
 		rule simple_signature() -> ModuleSignature
-			= x:identifier() { ModuleSignature{ identifier: x, parameters: Vec::new() } }
+			= a:optional_annotation() x:identifier() { ModuleSignature{ identifier: x, parameters: Vec::new(), annotation: a } }
 
 		rule signature_with_parameters() -> ModuleSignature
-			= x:identifier() "(" padding() p:parameter_name() ** (padding() "," padding())  padding() ")" { ModuleSignature{ identifier: x, parameters: p } }
+			= a:optional_annotation() x:identifier() "(" padding() p:parameter_name() ** (padding() "," padding())  padding() ")" { ModuleSignature{ identifier: x, parameters: p, annotation: a } }
 
 		rule signature() -> ModuleSignature
 			= signature_with_parameters() / simple_signature()
@@ -89,10 +89,10 @@ parser!{
 			= left:(left_pattern())? center:signature() right:(right_pattern())? expr:condition() { ModulePattern{ match_left: left, match_center: center, match_right: right, condition: expr } }
 
 		rule simple_template() -> ModuleTemplate
-			= x:identifier() { ModuleTemplate{ identifier: x, parameter_expressions: Vec::new() } }
+			= a:optional_annotation() x:identifier() { ModuleTemplate{ identifier: x, parameter_expressions: Vec::new(), annotation: a } }
 
 		rule template_with_parameters() -> ModuleTemplate
-			= x:identifier() "(" expr:arith_expr() ** ","  ")" { ModuleTemplate{ identifier: x, parameter_expressions: expr } }
+			= a:optional_annotation() x:identifier() "(" expr:arith_expr() ** ","  ")" { ModuleTemplate{ identifier: x, parameter_expressions: expr, annotation: a } }
 
 		pub rule template() -> ModuleTemplate
 			= template_with_parameters() / simple_template()
@@ -113,10 +113,10 @@ parser!{
 			= p:pattern() padding()  prob:probability_suffix() padding() "->" padding() rightside:template_string() { Rule{ pattern: p, right_side: rightside, probability: prob } }
 
 	    rule simple_module() -> Module
-			= x:identifier() { Module{ identifier: x, parameter_values: Vec::new() } }
+			= a:optional_annotation() x:identifier() { Module{ identifier: x, parameter_values: Vec::new(), annotation: a } }
 	
 		rule module_with_parameters() -> Module
-			= x:identifier() "(" n:number() ** ","  ")" { Module{ identifier: x, parameter_values: n } }
+			= a:optional_annotation() x:identifier() "(" n:number() ** ","  ")" { Module{ identifier: x, parameter_values: n, annotation: a } }
 
 		pub rule module() -> Module
 			= module_with_parameters() / simple_module()
@@ -132,6 +132,15 @@ parser!{
 
 		rule rule_list_inner() -> Vec<Rule>
 			= rs:lsystem_rule() ** rule_list_newline() { rs }
+
+		rule annotation_create_patch() -> ModuleAnnotation
+			= "~" { ModuleAnnotation::CreatePatch }
+
+		rule annotation() -> ModuleAnnotation
+			= annotation_create_patch() /* / .. / .. */
+
+		rule optional_annotation() -> Option<ModuleAnnotation>
+			= (annotation())?
 
 		pub rule rule_list() -> Vec<Rule>
 			= rs:rule_list_inner() rule_list_newline() { rs }

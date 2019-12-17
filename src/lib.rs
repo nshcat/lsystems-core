@@ -60,7 +60,7 @@ impl LSystem {
 	pub fn interpret(&mut self) {
 		self.commands = self.interpretation_engine.interpret(&self.iteration_engine.module_string);
 
-		let mut turtle = Turtle3D::new(self.parameters, self.engine.iteration_depth);
+		let mut turtle = Turtle3D::new(self.parameters, self.iteration_engine.iteration_depth);
 
 		turtle.execute_modules(&self.commands);
 

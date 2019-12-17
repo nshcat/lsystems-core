@@ -55,7 +55,7 @@ impl InterpretationEngine {
                     let scaling = match module.parameter_count() {
                         0 => 1.0,
                         1 => module.parameter_values[0],
-                        _ => panic!("Found module annotated as CreatePatch, but has more than one parameter value: {}", module);
+                        _ => panic!("Found module annotated as CreatePatch, but has more than one parameter value: {}", module)
                     };
                                  
                     commands.push(

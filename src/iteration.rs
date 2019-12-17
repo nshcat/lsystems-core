@@ -6,7 +6,6 @@ use std::fmt::*;
 use rand::*;
 use rand::rngs::*;
 use rand::distributions::*;
-use crate::drawing::DrawOperation;
 use crate::util::*;
 
 trait Evaluatable {
@@ -165,11 +164,28 @@ impl Display for Environment {
 /// This is used as part of module patterns as part of iteration rules.
 #[derive(Debug, Clone)]
 pub struct ModuleSignature {
+	pub annotation: Option<ModuleAnnotation>,
 	pub identifier: char,
 	pub parameters: Vec<char>
 }
 
 impl ModuleSignature {
+	/// Check whether the annotation in this signature fits the one in the given module
+	fn annotation_matches(&self, module: &Module) -> bool {
+		// If the options have different states they cant match
+		if self.annotation.is_some() != module.annotation.is_some() {
+			return false;
+		}
+
+		// They match if both are empty
+		if self.annotation.is_none() && module.annotation.is_none() {
+			return true;
+		}
+
+		// If both are present, check if the actual annotations match
+		return self.annotation.unwrap() == module.annotation.unwrap();
+	}
+
 	fn has_parameters(& self) -> bool {
 		self.parameters.len() > 0	
 	}
@@ -177,10 +193,18 @@ impl ModuleSignature {
 	fn parameter_count(& self) -> usize {
 		return self.parameters.len();	
 	}
+
+	pub fn has_annotation(& self) -> bool {
+		return self.annotation.is_some();
+	}
 }
 
 impl Display for ModuleSignature {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+		if(self.has_annotation()) {
+			write!(f, "{}", self.annotation.unwrap())?;
+		}
+
 		if(self.has_parameters()) {
 			let mut is_first = true;
 			write!(f, "{}(", self.identifier)?;
@@ -208,7 +232,8 @@ impl Display for ModuleSignature {
 #[derive(Debug, Clone)]
 pub struct ModuleTemplate {
 	pub identifier: char,
-	pub parameter_expressions: Vec<ArithmeticExpression>
+	pub parameter_expressions: Vec<ArithmeticExpression>,
+	pub annotation: Option<ModuleAnnotation>
 }
 
 impl ModuleTemplate {
@@ -216,6 +241,7 @@ impl ModuleTemplate {
 	/// contained in the template will be evaluated with given environment.
 	pub fn instantiate(& self, env: &Environment) -> Module {
 		Module {
+			annotation: self.annotation,
 			identifier: self.identifier,
 			parameter_values: self.parameter_expressions.iter().map(|expr| expr.eval(env)).collect()
 		}
@@ -228,10 +254,18 @@ impl ModuleTemplate {
 	pub fn parameter_count(& self) -> usize {
 		return self.parameter_expressions.len();	
 	}
+
+	pub fn has_annotation(& self) -> bool {
+		return self.annotation.is_some();
+	}
 }
 
 impl Display for ModuleTemplate {
 	fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+		if(self.has_annotation()) {
+			write!(f, "{}", self.annotation.unwrap())?;
+		}
+
 		if(self.has_parameters()) {
 			let mut is_first = true;
 			write!(f, "{}(", self.identifier)?;
@@ -259,7 +293,7 @@ impl Display for ModuleTemplate {
 /// We use hardcoded annotations, since just interpreting any character in front of a module
 /// identifier as an annotation would be ambiguous; we want to allow parameterless module strings such as
 /// "+++---A(f)" which contain special characters like '+' and '-'. 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ModuleAnnotation {
 	/// Interpret the module as a command to create a bezier patch at this position.
 	CreatePatch
@@ -415,6 +449,11 @@ impl ModulePattern {
 				return false;
 			}
 
+			// Check if annotations match
+			if !match_left.annotation_matches(left) {
+				return false;
+			}
+
 			Self::extract_parameters(&match_left, &left, &mut env);
 		}
 
@@ -432,6 +471,11 @@ impl ModulePattern {
 			}
 
 			if(match_right.parameter_count() != right.parameter_count()) {
+				return false;
+			}
+
+			// Check if annotations match
+			if !match_right.annotation_matches(right) {
 				return false;
 			}
 
