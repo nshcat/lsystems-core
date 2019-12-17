@@ -1,4 +1,3 @@
-use std::num::*;
 use nalgebra::*;
 
 use crate::drawing::*;
@@ -149,6 +148,38 @@ impl Turtle3D {
 		// Nothing to do
 	}
 
+	/// Determine bezier patch orientation and save to result
+	fn create_patch(&mut self, identifier: char, scale: f64) {
+		// The model transformation matrix contains both a base change matrix as well as
+		// a translation component.
+		// The goal is to achieve the following transformations: 
+		// 	- translate the local origin to the turtle position
+		//	- rotate local x-axis onto the turtles direction
+		//  - rotate local y-axis onto the turtles right direction (-left)
+		//  - rotate local z-axis onto the turtles up direction
+		//
+		let H = Self::convert_vector(&self.current_state.heading.into_inner());
+		let U = Self::convert_vector(&self.current_state.up.into_inner());
+		let L = Self::convert_vector(&self.current_state.left.into_inner());
+		let p = Self::convert_vector(&self.current_state.position);
+
+		let model_matrix = Matrix4f::new(
+			H.x, -L.x, U.x, p.x,
+			H.y, -L.y, U.y, p.y,
+			H.z, -L.z, U.z, p.z,
+			0.0,  0.0, 0.0, 1.0
+		);
+
+		let scaling = Matrix4f::new_scaling(scale as _);
+
+		self.drawing_result.patches.push(
+			Patch {
+				model_transform: model_matrix * scaling,
+				identifier: identifier
+			}
+		)
+	}
+
 	pub fn retrieve_result(&self) -> &DrawingResult {
 		&self.drawing_result
 	}
@@ -185,6 +216,9 @@ impl Turtle3D {
 	pub fn execute_modules(&mut self, commands: &[DrawingCommand]) {
 		for command in commands {
 			match command {
+				// Patch creation
+				DrawingCommand::SpawnPatch{patch_id, scaling} => self.create_patch(*patch_id, *scaling),
+
 				// Moving
 				DrawingCommand::BasicCommand{operation: TurtleCommand::Forward, parameter: p} => self.move_forward(p.unwrap_or(self.draw_parameters.step), true),
 				DrawingCommand::BasicCommand{operation: TurtleCommand::ForwardNoDraw, parameter: p} => self.move_forward(p.unwrap_or(self.draw_parameters.step), false),
