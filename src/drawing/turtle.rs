@@ -255,8 +255,13 @@ impl Turtle3D {
 				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementColor, ..} => self.modify_color_index(-1),
 
 				// Line width handling
-				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementLineWidth, parameter: p} => self.modify_line_width(p.unwrap_or(self.draw_parameters.line_width_delta)),
-				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementLineWidth, parameter: p} => self.modify_line_width(-p.unwrap_or(self.draw_parameters.line_width_delta)),
+				// If no parameter is given, the line width commands increment or decrement the line width by the line width delta value.
+				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementLineWidth, parameter: None} => self.modify_line_width(self.draw_parameters.line_width_delta),
+				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementLineWidth, parameter: None} => self.modify_line_width(-self.draw_parameters.line_width_delta),
+
+				// If a parameter is given, they set the line width to that parameters value.
+				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementLineWidth, parameter: Some(p)} => self.current_state.line_width = p.max(0.0),
+				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementLineWidth, parameter: Some(p)} => self.current_state.line_width = p.max(0.0),
 
 				_ => ()
 			}
