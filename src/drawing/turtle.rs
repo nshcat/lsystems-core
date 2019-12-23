@@ -251,8 +251,11 @@ impl Turtle3D {
 				DrawingCommand::BasicCommand{operation: TurtleCommand::SubmitVertex, ..} => self.submit_vertex(),
 
 				// Color handling
-				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementColor, ..} => self.modify_color_index(1),
-				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementColor, ..} => self.modify_color_index(-1),
+				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementColor, parameter: None} => self.modify_color_index(1),
+				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementColor, parameter: None} => self.modify_color_index(-1),
+
+				DrawingCommand::BasicCommand{operation: TurtleCommand::IncrementColor, parameter: Some(p)} => self.current_state.color_index = (*p as i32).min(self.draw_parameters.color_palette_size as i32 - 1).max(0),
+				DrawingCommand::BasicCommand{operation: TurtleCommand::DecrementColor, parameter: Some(p)} => self.current_state.color_index = (*p as i32).min(self.draw_parameters.color_palette_size as i32 - 1).max(0),
 
 				// Line width handling
 				// If no parameter is given, the line width commands increment or decrement the line width by the line width delta value.
