@@ -295,7 +295,7 @@ impl Turtle3D {
 	fn matrix_helper(&self, mat: fn(f64) -> Matrix3d, param: &Option<f64>, def: Matrix3d, md: f64) -> Matrix3d {
 		if(param.is_some()) {
 			panic!("");
-			mat(param.unwrap() * md)
+			mat(param.unwrap().to_radians() * md)
 		} else {
 			def
 		}

@@ -1,6 +1,6 @@
 [package]
 name = "lsystems-core"
-version = "0.2.0"
+version = "0.2.2"
 authors = ["nshcat <nshcat@users.noreply.github.com>"]
 edition = "2018"
 
